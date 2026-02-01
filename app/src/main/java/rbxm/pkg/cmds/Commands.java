@@ -31,7 +31,15 @@ public static class Commands {
 
             // Install
             "install", new Command(executables::install, "pkg-name", "pkg-version"),
-            "$i", new Command(executables::install, "pkg-name", "pkg-version"));
+            "$i", new Command(executables::install, "pkg-name", "pkg-version"),
+
+            // Publish
+            "publish", new Command(executables::publish, "pkg-url", "pkg-name", "pkg-version", "pkg-author", "pkg-details", "pkg-dependencies"),
+            "$p", new Command(executables::publish, "pkg-url", "pkg-name", "pkg-version", "pkg-author", "pkg-details", "pkg-dependencies"),
+
+            // Details
+            "details", new Command(executables::details, "pkg-name", "pkg-version"),
+            "$d", new Command(executables::details, "pkg-name", "pkg-version"));
 
     /**
      * <h3>Run Method</h3>
