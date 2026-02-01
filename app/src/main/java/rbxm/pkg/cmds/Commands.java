@@ -1,16 +1,10 @@
-package pkg.cmds;
+package rbxm.pkg.cmds;
 
-import Command;
-
-import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Optional;
-import rbxm.pkg.cmds.executables;
 
-// Commands
-import rbxm.pkg.cmds.executables.help;
+import org.jspecify.annotations.NonNull;
 
-public static class Commands {
+public class Commands {
     /**
      * <h3>Storage Map</h3>
      * <hr>
@@ -23,7 +17,7 @@ public static class Commands {
      * 
      * @see Command
      */
-    private static final Map<String, Command> storage = Map.of(
+    private static final Map<String, @NonNull Command> storage = Map.of(
             // Help
             "help", new Command(executables::help, "category?", "subcategories?"),
             "$h", new Command(executables::help, "category?", "subcategories?"),
@@ -34,8 +28,12 @@ public static class Commands {
             "$i", new Command(executables::install, "pkg-name", "pkg-version"),
 
             // Publish
-            "publish", new Command(executables::publish, "pkg-url", "pkg-name", "pkg-version", "pkg-author", "pkg-details", "pkg-dependencies"),
-            "$p", new Command(executables::publish, "pkg-url", "pkg-name", "pkg-version", "pkg-author", "pkg-details", "pkg-dependencies"),
+            "publish",
+            new Command(executables::publish, "pkg-url", "pkg-name", "pkg-version", "pkg-author", "pkg-details",
+                    "pkg-dependencies"),
+            "$p",
+            new Command(executables::publish, "pkg-url", "pkg-name", "pkg-version", "pkg-author", "pkg-details",
+                    "pkg-dependencies"),
 
             // Details
             "details", new Command(executables::details, "pkg-name", "pkg-version"),
@@ -62,12 +60,12 @@ public static class Commands {
 
         if (storage.containsKey(args[0])) {
             try {
+                
                 var cData = storage.get(args[0]);
-
                 cData.execute(args);
 
             } catch (Exception e) {
-                System.out.println("Failed to execute command");
+                System.out.println("Failed to execute command: " + e.getMessage());
             }
             return;
 

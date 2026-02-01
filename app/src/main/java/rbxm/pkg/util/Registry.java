@@ -1,4 +1,4 @@
-package pkg.util;
+package rbxm.pkg.util;
 
 import java.util.Map;
 import com.google.gson.reflect.TypeToken;
@@ -9,18 +9,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import rbxm.pkg.util.Constants;
-import rbxm.pkg.util.TypeTokens;
-
-public static class Registry {
+public class Registry {
         /**
          * Definition for a Registry
          */
-        private class blueprint {
+        public static class blueprint {
                 public Map<String, Map<String, PackageInfo>> pkgs;
         }
 
-        private static blueprint local_registry; // our registry
+        public static blueprint local_registry; // our registry
 
         /**
          * Initialize the registry
@@ -53,6 +50,6 @@ public static class Registry {
         }
 
         public static blueprint getRegistry() {
-                return local_reg;
+                return local_registry;
         }
 }

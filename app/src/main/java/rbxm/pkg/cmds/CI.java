@@ -1,4 +1,4 @@
-package pkg.cmds;
+package rbxm.pkg.cmds;
 
 import java.util.HashMap;
 
@@ -16,7 +16,7 @@ public interface CI {
         return args.size();
     }
 
-    default void execute() {
+    default void execute(String[] a) {
         System.out.println("This command has not yet been defined.");
         return;
     }

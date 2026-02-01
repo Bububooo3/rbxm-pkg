@@ -1,9 +1,15 @@
-package pkg.cmds;
+package rbxm.pkg.cmds;
 
 import rbxm.pkg.util.Constants.CommandArgs;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+
+import rbxm.pkg.util.PackageInfo;
 import rbxm.pkg.util.Registry;
 
 /**
@@ -11,7 +17,7 @@ import rbxm.pkg.util.Registry;
  * @see Command
  * @see CI
  */
-public static class executables {
+public class executables {
     /**
      * <h3>Install Command</h3>
      * <hr>
@@ -25,51 +31,35 @@ public static class executables {
      * @param name    is the pkg to install
      * @param version is the version of the pkg
      * 
-     * @throws Exception
      */
-    public static void install(String[] a) throws Exception {
+    public static void install(String[] a) {
         if (!verifyArgs(a.length, CommandArgs.INSTALL)) {
             improper();
             return;
         }
 
-        var reg = Registry.getRegistry();
-        var pkgs = reg.pkgs;
-
         final String name = a[1];
+        String version = (a.length == 2) ? "latest" : a[2];
+        Optional<Map<String, PackageInfo>> versions = verifyPkg(name, version);
 
-        // Library exists?
-        if (!pkgs.containsKey(name)) {
-            System.out.println("Invalid package: pkg-" + name);
+        if (versions.isEmpty()) {
+            System.out.println("Failed to get details of pkg-" + name + "@v" + version);
             return;
         }
 
-        // Version exists?
-        var versions = pkgs.get(name);
-        String version = (a.length == 2) ? versions.get("latest") : a[2]; // 2 means no version written
-
-        if (!versions.containsKey(version)) {
-            System.out.println("Invalid version: v" + version);
-
-            version = versions.get("latest");
-
-            System.out.println("Retrieving latest release: v" + version);
-
-            if (!versions.containsKey(version)) {
-                System.out.println("Invalid version: v" + version);
-                System.out.println("Installation failed for pkg-" + name);
-                return;
-            }
-        }
-
         // Install it then
-        PackageInfo info = versions.get(version);
+        PackageInfo info = versions.get().get(version);
 
         System.out.println("Installing pkg-" + name + "@v" + version);
         System.out.println("(from " + info.url() + ")");
 
         Path installPath = Path.of("path/to/rblx/fldr", name, version); // TODO
-        Files.createDirectories(installPath); // just makes a folder there
+
+        try {
+            Files.createDirectories(installPath); // just makes a folder there
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Installation Complete ( " + installPath.toAbsolutePath() + " )"); // for the users to know
     }
@@ -87,9 +77,8 @@ public static class executables {
      * @param category      the category to explore <b>(optional)</b>
      * @param subcategories are the params that follow category <b>(optional)</b>
      * 
-     * @throws Exception
      */
-    public static void help(String[] a) throws Exception {
+    public static void help(String[] a) {
         if (!verifyArgs(a.length, CommandArgs.HELP)) {
             improper();
             return;
@@ -115,9 +104,8 @@ public static class executables {
      * @param details      is a description of the pkg
      * @param dependencies is the other pkgs the pkg relies on
      * 
-     * @throws Exception
      */
-    public static void publish(String[] a) throws Exception {
+    public static void publish(String[] a) {
         if (!verifyArgs(a.length, CommandArgs.PUBLISH)) {
             improper();
             return;
@@ -145,9 +133,8 @@ public static class executables {
      * @param category      the category to explore <b>(optional)</b>
      * @param subcategories are the params that follow category <b>(optional)</b>
      * 
-     * @throws Exception
      */
-    public static void details(String[] a) throws Exception {
+    public static void details(String[] a) {
         if (!verifyArgs(a.length, CommandArgs.DETAILS)) {
             improper();
             return;
@@ -155,14 +142,25 @@ public static class executables {
 
         final String name = a[1];
         String version = (a.length == 2) ? "latest" : a[2];
+        Optional<Map<String, PackageInfo>> versions = verifyPkg(name, version);
 
-        if (!(verifyPkg(name, version))) {
-            System.out.println("Failed to get details of pkg-" + name + "@v"+version);
+        if (versions.isEmpty()) {
+            System.out.println("Failed to get details of pkg-" + name + "@v" + version);
             return;
         }
 
         // Install it then
-        PackageInfo info = versions.get(version);
+        PackageInfo info = versions.get().get(version);
+        String printable = """
+                \nPackage: """ + name + """
+                \nVersion: """ + version + """
+                \nDependencies: """ + name + """
+                \n""" + """
+                \nDescription: """ + info.description() + """
+                \nURL: """ + info.url() + """
+                \nAuthor: """ + info.author();
+
+        System.out.println(printable);
 
         empty();
         return;
@@ -179,9 +177,8 @@ public static class executables {
      * 
      * @param a is the array of arguments. There should be none.
      * 
-     * @throws Exception
      */
-    private static void empty(String... a) throws Exception {
+    private static void empty(String... a) {
         System.out.println("This command has not yet been implemented.");
         return;
     }
@@ -198,9 +195,8 @@ public static class executables {
      * 
      * @param a is the array of arguments. There should be none.
      * 
-     * @throws Exception
      */
-    private static void improper(String... a) throws Exception {
+    private static void improper(String... a) {
         System.out.println("Please format your request properly: rbxm-pkg [command] [arguments]");
         return;
     }
@@ -219,14 +215,25 @@ public static class executables {
      * @param length  is the length of the array of arguments entered by the user
      * @param allowed is the ArrayList of allowed amounts of arguments
      * 
-     * @apiNote {@code -1} means any number of arguments is allowed
-     * 
-     * @throws Exception
+     * @apiNote {@code -a} means any number of args {@code n} is allowed that
+     *          fulfills {@code n >= |a + 1|}
      * 
      * @see CommandArgs
      */
-    private static boolean verifyArgs(int length, ArrayList<Integer> allowed) throws Exception {
-        return (allowed.contains(a.length) || allowed.contains(-1));
+    private static boolean verifyArgs(int length, ArrayList<Integer> allowed) {
+        if (allowed.contains(length)) {
+            return true;
+        }
+
+        if (allowed.size() != 1) {
+            return false;
+        }
+
+        if (allowed.get(0) < 0) {
+            return (Math.abs(allowed.get(0) + 1) < length);
+        }
+
+        return false;
     }
 
     /**
@@ -234,7 +241,7 @@ public static class executables {
      * <hr>
      * Check quickly to see if this package and version are accessible.
      * <div>
-     * Returns {@code true} if package is accessible
+     * Returns {@code <Map<String, PackageInfo>> versions} if package is accessible
      * 
      * <hr>
      * {@code not runnable for users}
@@ -242,38 +249,37 @@ public static class executables {
      * 
      * @param name    is the name of the package
      * @param version is the version of the package
+     * @param a       is the user input
      * 
-     * @throws Exception
      * 
      */
-    private static boolean verifyPkg(String name, String version) throws Exception {
+    private static Optional<Map<String, PackageInfo>> verifyPkg(String name, String version) {
         var reg = Registry.getRegistry();
         var pkgs = reg.pkgs;
 
         // Library exists?
         if (!pkgs.containsKey(name)) {
             System.out.println("Invalid package: pkg-" + name);
-            return false;
+            return Optional.empty();
         }
 
         // Version exists?
         var versions = pkgs.get(name);
-        version = (a.length == 2) ? versions.get("latest") : a[2]; // 2 means no version written
 
         if (!versions.containsKey(version)) {
             System.out.println("Invalid version: v" + version);
 
-            version = versions.get("latest");
+            version = "latest";
 
             System.out.println("Retrieving latest release: v" + version);
 
             if (!versions.containsKey(version)) {
                 System.out.println("Invalid version: v" + version);
                 System.out.println("Installation failed for pkg-" + name);
-                return false;
+                return Optional.empty();
             }
         }
 
-        return true;
+        return Optional.of(versions);
     }
 }

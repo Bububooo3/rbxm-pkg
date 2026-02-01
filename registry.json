@@ -1,6 +1,11 @@
 {
   "Example": {
-    "latest": "1.0.0",
+    "latest": {
+      "url": "https://github.com/Bububooo3/rbxm-pkg/raw/refs/heads/main/pkgs/CodeOutline.rbxm",
+      "author": "BoatBomber",
+      "details": "A plugin providing an organized, symbol-oriented overview of your code.",
+      "dependencies": []
+    },
     "1.0.0": {
       "url": "https://github.com/Bububooo3/rbxm-pkg/raw/refs/heads/main/pkgs/CodeOutline.rbxm",
       "author": "BoatBomber",
