@@ -3,7 +3,8 @@
     "latest": "1.0.0",
     "1.0.0": {
       "url": "https://github.com/Bububooo3/rbxm-pkg/raw/refs/heads/main/pkgs/CodeOutline.rbxm",
-      "description": "local plugin for viewing your code",
+      "author": "BoatBomber",
+      "description": "A plugin providing an organized, symbol-oriented overview of your code.",
       "dependencies": []
     }
   }
