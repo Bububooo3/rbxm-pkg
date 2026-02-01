@@ -2,8 +2,8 @@
   "Example": {
     "latest": "1.0.0",
     "1.0.0": {
-      "url": "",
-      "description": "",
+      "url": "https://github.com/Bububooo3/rbxm-pkg/raw/refs/heads/main/pkgs/CodeOutline.rbxm",
+      "description": "local plugin for viewing your code",
       "dependencies": []
     }
   }
