@@ -34,7 +34,7 @@ public static class executables {
         }
 
         var reg = Registry.getRegistry();
-        var pkgs = reg.pkgs();
+        var pkgs = reg.pkgs;
 
         final String name = a[1];
 
