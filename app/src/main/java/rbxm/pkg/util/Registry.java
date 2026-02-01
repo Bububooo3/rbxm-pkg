@@ -14,12 +14,13 @@ import rbxm.pkg.util.TypeTokens;
 
 public static class Registry {
         /**
-         * Record definition for a Registry
+         * Definition for a Registry
          */
-        public record RegistryRecord(Map<String, Map<String, PackageInfo>> pkgs) {
+        private class blueprint {
+                public Map<String, Map<String, PackageInfo>> pkgs;
         }
 
-        private TypeTokens.registry local_reg; // our registry
+        private static blueprint local_registry; // our registry
 
         /**
          * Initialize the registry
@@ -40,14 +41,18 @@ public static class Registry {
                 }
 
                 Gson gson = new Gson();
+                Type type = new TypeToken<Map<String, Map<String, PackageInfo>>>() {
+                }.getType();
 
-                RegistryType raw = gson.fromJson(response.body(), type);
+                Map<String, Map<String, PackageInfo>> raw = gson.fromJson(response.body(), type);
 
-                registry = new Registry(raw);
+                local_registry = new blueprint();
+                local_registry.pkgs = raw;
+
                 System.out.println("Accessed registry: [" + Constants.REGURL + "]");
         }
 
-        public static RegistryType getRegistry() {
-                return registry;
+        public static blueprint getRegistry() {
+                return local_reg;
         }
 }

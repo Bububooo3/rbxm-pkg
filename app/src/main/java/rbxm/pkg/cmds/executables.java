@@ -1,7 +1,10 @@
 package pkg.cmds;
 
+import rbxm.pkg.util.Constants.CommandArgs;
+
+import java.nio.file.Path;
+import java.util.ArrayList;
 import rbxm.pkg.util.Registry;
-import rbxm.pkg.util.TypeTokens;
 
 /**
  * @apiNote {@code a[0]} is the command itself
@@ -25,16 +28,15 @@ public static class executables {
      * @throws Exception
      */
     public static void install(String[] a) throws Exception {
-        if (!(a.length == 3)) {
+        if (!verifyArgs(a.length, CommandArgs.INSTALL)) {
             improper();
             return;
         }
 
-        final String name = a[1];
-        final String version = a[2];
-
         var reg = Registry.getRegistry();
         var pkgs = reg.pkgs();
+
+        final String name = a[1];
 
         // Library exists?
         if (!pkgs.containsKey(name)) {
@@ -44,12 +46,13 @@ public static class executables {
 
         // Version exists?
         var versions = pkgs.get(name);
+        String version = (a.length == 2) ? versions.get("latest") : a[2]; // 2 means no version written
 
         if (!versions.containsKey(version)) {
             System.out.println("Invalid version: v" + version);
 
-            version = pkgs.get("latest");
-            
+            version = versions.get("latest");
+
             System.out.println("Retrieving latest release: v" + version);
 
             if (!versions.containsKey(version)) {
@@ -66,9 +69,9 @@ public static class executables {
         System.out.println("(from " + info.url() + ")");
 
         Path installPath = Path.of("path/to/rblx/fldr", name, version); // TODO
-        Files.createDirectories(installPath);
+        Files.createDirectories(installPath); // just makes a folder there
 
-        System.out.println("Installation Complete ( " + installPath.toAbsolutePath() + " )");
+        System.out.println("Installation Complete ( " + installPath.toAbsolutePath() + " )"); // for the users to know
     }
 
     /**
@@ -87,6 +90,10 @@ public static class executables {
      * @throws Exception
      */
     public static void help(String[] a) throws Exception {
+        if (!verifyArgs(a.length, CommandArgs.HELP)) {
+            improper();
+            return;
+        }
 
     }
 
@@ -103,7 +110,7 @@ public static class executables {
      * 
      * @throws Exception
      */
-    public static void empty(String... a) throws Exception {
+    private static void empty(String... a) throws Exception {
         System.out.println("This command has not yet been implemented.");
         return;
     }
@@ -122,8 +129,32 @@ public static class executables {
      * 
      * @throws Exception
      */
-    public static void improper(String... a) throws Exception {
+    private static void improper(String... a) throws Exception {
         System.out.println("Please format your request properly: rbxm-pkg [command] [arguments]");
         return;
+    }
+
+    /**
+     * <h3>Verify Arguments Helper Method</h3>
+     * <hr>
+     * Check quickly to see if this command was formatted properly.
+     * <div>
+     * Returns {@code true} if the entry is valid
+     * 
+     * <hr>
+     * {@code not runnable for users}
+     * <hr>
+     * 
+     * @param length  is the length of the array of arguments entered by the user
+     * @param allowed is the ArrayList of allowed amounts of arguments
+     * 
+     * @apiNote {@code -1} means any number of arguments is allowed
+     * 
+     * @throws Exception
+     * 
+     * @see CommandArgs
+     */
+    private static boolean verifyArgs(int length, ArrayList<Integer> allowed) throws Exception {
+        return (allowed.contains(a.length) || allowed.contains(-1));
     }
 }

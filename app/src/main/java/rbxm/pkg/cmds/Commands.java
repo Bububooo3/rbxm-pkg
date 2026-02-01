@@ -11,8 +11,6 @@ import rbxm.pkg.cmds.executables;
 import rbxm.pkg.cmds.executables.help;
 
 public static class Commands {
-    private static final String[] backupCommandData = { "help " };
-
     /**
      * <h3>Storage Map</h3>
      * <hr>
@@ -50,7 +48,7 @@ public static class Commands {
      */
     public static void run(String[] args) {
         if (args.length == 0) {
-            run(backupCommandData);
+            System.out.println("");
             return;
         }
 
@@ -61,7 +59,7 @@ public static class Commands {
                 cData.execute(args);
 
             } catch (Exception e) {
-                System.out.println("Command failed");
+                System.out.println("Failed to execute command");
             }
             return;
 
