@@ -1,1 +1,1 @@
-> **NOTE:** The packages that you can access through this package manager are not all mine. The creators are all properly credited. Use the `info [pkg-name]` command to see.
+> **NOTE:** The packages that you can access through this package manager are not all mine. The creators are all properly credited. Use the `info [pkg-name]` command to see, or check the [registry file](/registry.json).
