@@ -3,6 +3,10 @@ package rbxm.pkg.cmds;
 import rbxm.pkg.util.Constants.CommandArgs;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -53,11 +57,34 @@ public class executables {
         System.out.println("Installing pkg-" + name + "@v" + version);
         System.out.println("(from " + info.url() + ")");
 
-        Path installPath = Path.of("path/to/rblx/fldr", name, version); // TODO
+        Path installPath = Path.of(System.getProperty("user.dir"), "rbxm-packages", name, version);
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(info.url()))
+                .build();
+
+        Optional<HttpResponse<byte[]>> response = Optional.empty();
+
+        try {
+            response = Optional.of(client.send(request, HttpResponse.BodyHandlers.ofByteArray()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Path filePath = installPath.resolve(name + ".rbxm");
 
         try {
             Files.createDirectories(installPath); // just makes a folder there
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (response.isPresent() && response.get().statusCode() == 200) {
+                Files.write(filePath, response.get().body());
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -154,7 +181,7 @@ public class executables {
         String printable = """
                 \nPackage: """ + name + """
                 \nVersion: """ + version + """
-                \nDependencies: """ + name + """
+                \nDependencies: """ + info.dependencies() + """
                 \n""" + """
                 \nDescription: """ + info.description() + """
                 \nURL: """ + info.url() + """
