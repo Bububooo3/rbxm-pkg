@@ -1,6 +1,8 @@
 package rbxm.pkg.util;
 
 import java.util.Map;
+import java.util.Optional;
+
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
 import java.lang.reflect.Type;
@@ -21,35 +23,42 @@ public class Registry {
 
         /**
          * Initialize the registry
-         * 
-         * @throws Exception
          */
-        public static void initRegistry() throws Exception {
+        public static void initRegistry() {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest request = HttpRequest.newBuilder()
                                 .uri(URI.create(Constants.REGURL))
                                 .build();
+                try {
+                        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        if (response.statusCode() != 200) {
+                                System.out.println("Failed to load registry [HTTP " + response.statusCode() + "]");
+                                System.exit(1);
+                        }
 
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        Gson gson = new Gson();
+                        Type type = new TypeToken<Map<String, Map<String, PackageInfo>>>() {
+                        }.getType();
 
-                if (response.statusCode() != 200) {
-                        System.out.println("Failed to load registry [HTTP " + response.statusCode() + "]");
-                        System.exit(1);
+                        Map<String, Map<String, PackageInfo>> raw = gson.fromJson(response.body(), type);
+
+                        local_registry = new blueprint();
+                        local_registry.pkgs = raw;
+
+                        System.out.println("Accessed registry: [" + Constants.REGURL + "]");
+                } catch (Exception e) {
+                        System.out.println("There was a problem initializing the package registry");
+                        System.out.print("Retry?");
                 }
 
-                Gson gson = new Gson();
-                Type type = new TypeToken<Map<String, Map<String, PackageInfo>>>() {
-                }.getType();
-
-                Map<String, Map<String, PackageInfo>> raw = gson.fromJson(response.body(), type);
-
-                local_registry = new blueprint();
-                local_registry.pkgs = raw;
-
-                System.out.println("Accessed registry: [" + Constants.REGURL + "]");
         }
 
-        public static blueprint getRegistry() {
-                return local_registry;
+        public static Optional<blueprint> getRegistry() {
+                if (local_registry == null) {
+                        System.out.println("The package registry was not found");
+                        return Optional.empty();
+                } else {
+                        return Optional.of(local_registry);
+                }
         }
 }

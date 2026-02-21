@@ -281,7 +281,11 @@ public class executables {
      * 
      */
     private static Optional<Map<String, PackageInfo>> verifyPkg(String name, String version) {
-        var reg = Registry.getRegistry();
+        var reg_proxy = Registry.getRegistry();
+        if (reg_proxy.isEmpty())
+            return Optional.empty();
+
+        var reg = reg_proxy.get();
         var pkgs = reg.pkgs;
 
         // Library exists?
